@@ -24,7 +24,7 @@
 #include "../include/global.h"
 #include "../include/control_header_lib.h"
 #include "../include/network_util.h"
-
+#include "../include/routertable.h"
 #include <string.h>
 #include <arpa/inet.h>
 #include <vector>
@@ -33,7 +33,6 @@
 #include <netinet/in.h>
 using namespace std;
 // #define AUTHOR_STATEMENT "I, gursimr2, have read and understood the course academic integrity policy."
-
 void rt_response(int sock_index)
 {
 	uint16_t payload_len, response_len;

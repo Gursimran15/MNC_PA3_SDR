@@ -32,7 +32,12 @@
 #include <netinet/in.h>
 using namespace std;
 // #define AUTHOR_STATEMENT "I, gursimr2, have read and understood the course academic integrity policy."
-
+char HOSTIP[20];
+uint16_t MYID;
+map <int,int>router_table;
+map <int,int>next_hop;
+uint16_t NUM_ROUTERS;
+uint16_t TIME_PERIOD;
 void init_response(int sock_index)
 {
 	uint16_t payload_len, response_len;
@@ -65,23 +70,29 @@ vector<router_init> r;
   char* temp;
   char* ip;
   strncpy(temp,cntrl_payload,sizeof(uint16_t));
-  num_r = (uint16_t)temp;
+  sscanf(temp,"%d",num_r);
+//   num_r = (uint16_t)temp;
   NUM_ROUTERS = ntohs(num_r);
   strncpy(temp,cntrl_payload +  sizeof(uint16_t),sizeof( uint16_t));
-  time_p =  (uint16_t)temp;
+//   time_p =  (uint16_t)temp;
+  sscanf(temp,"%d",time_p);
   TIME_PERIOD = ntohs(time_p);
   for(int i=0;i<num_r;i++){
 	  strncpy(temp,cntrl_payload +  (i*6*sizeof(uint16_t)) +2*sizeof(uint16_t),sizeof( uint16_t));
-	  r[i].router_id=(uint16_t)temp;
+	  sscanf(temp,"%d",r[i].router_id);
+	//   r[i].router_id=(uint16_t)temp;
 	  r[i].router_id=ntohs(r[i].router_id);
 	  strncpy(temp,cntrl_payload +  (i*6*sizeof(uint16_t)) +3*sizeof(uint16_t),sizeof( uint16_t));
-	  r[i].r_port=(uint16_t)temp;
+	  sscanf(temp,"%d",r[i].r_port);
+	  //r[i].r_port=(uint16_t)temp;
 	  r[i].r_port=ntohs(r[i].r_port);
 	  strncpy(temp,cntrl_payload +  (i*6*sizeof(uint16_t)) +4*sizeof(uint16_t),sizeof( uint16_t));
-	  r[i].d_port=(uint16_t)temp;
+	  sscanf(temp,"%d",r[i].d_port);
+	  //r[i].d_port=(uint16_t)temp;
 	  r[i].d_port=ntohs(r[i].d_port);
 	  strncpy(temp,cntrl_payload +  (i*6*sizeof(uint16_t)) +5*sizeof(uint16_t),sizeof( uint16_t));
-	  r[i].cost=(uint16_t)temp;
+	  sscanf(temp,"%d",r[i].cost);
+	  //r[i].cost=(uint16_t)temp;
 	  r[i].cost=ntohs(r[i].cost);
 	  strncpy(temp,cntrl_payload +  (i*6*sizeof(uint16_t)) +6*sizeof(uint16_t),2*sizeof( uint16_t));
 	  inet_ntop(AF_INET,temp,ip,sizeof(INET_ADDRSTRLEN));

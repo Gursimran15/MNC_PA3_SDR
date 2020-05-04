@@ -22,12 +22,12 @@ struct routing_tab{
     uint16_t cost;
      uint16_t next_hop;
 };
-char HOSTIP[20];
-uint16_t MYID;
-map <int,int>router_table;
-map <int,int>next_hop;
- uint16_t NUM_ROUTERS;
-  uint16_t TIME_PERIOD;
+extern char HOSTIP[20];
+extern uint16_t MYID;
+extern map <int,int>router_table;
+extern map <int,int>next_hop;
+extern uint16_t NUM_ROUTERS;
+extern uint16_t TIME_PERIOD;
 #define ERROR(err_msg) {perror(err_msg); exit(EXIT_FAILURE);}
 
 /* https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/ */
