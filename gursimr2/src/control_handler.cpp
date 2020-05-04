@@ -34,6 +34,7 @@
 #include "../include/author.h"
 #include "../include/init.h"
 #include "../include/routertable.h"
+#include "../include/connection_manager.h"
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
     #define CNTRL_PAYLOAD_LEN_OFFSET 0x06
@@ -119,7 +120,7 @@ bl control_recv_hook(int sock_index)
     char *cntrl_header, *cntrl_payload;
     uint8_t control_code;
     uint16_t payload_len;
-
+    int r_socket;
     /* Get control header */
     cntrl_header = (char *) malloc(sizeof(char)*CNTRL_HEADER_SIZE);
     bzero(cntrl_header, CNTRL_HEADER_SIZE);
@@ -168,6 +169,7 @@ bl control_recv_hook(int sock_index)
                 break;
 
         case 1: init_payload(sock_index,cntrl_payload);
+                r_socket = create_router_sock();
                 init_response(sock_index);
                 break;
         case 2: rt_response(sock_index);

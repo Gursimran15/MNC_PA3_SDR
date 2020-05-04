@@ -38,10 +38,10 @@ void rt_response(int sock_index)
 	uint16_t payload_len, response_len;
 	char *cntrl_response_header, *cntrl_response_payload, *cntrl_response;
 
-    cntrl_response_payload = rt_payload(sock_index);
-	payload_len = sizeof(cntrl_response_payload); // Discount the NULL chararcter
-	// cntrl_response_payload = (char *) malloc(payload_len);
-	// memcpy(cntrl_response_payload, 0, payload_len);
+    char* payload= rt_payload(sock_index);
+	payload_len = sizeof(payload)-1; // Discount the NULL chararcter
+	cntrl_response_payload = (char *) malloc(payload_len);
+	memcpy(cntrl_response_payload, payload , payload_len);
 
 	cntrl_response_header = create_response_header(sock_index, 2, 0, payload_len);
 

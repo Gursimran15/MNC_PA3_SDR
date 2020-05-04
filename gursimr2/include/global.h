@@ -28,6 +28,8 @@ extern map <int,int>router_table;
 extern map <int,int>next_hop;
 extern uint16_t NUM_ROUTERS;
 extern uint16_t TIME_PERIOD;
+extern uint16_t ROUTER_PORT;
+extern uint16_t DATA_PORT;
 #define ERROR(err_msg) {perror(err_msg); exit(EXIT_FAILURE);}
 
 /* https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/ */

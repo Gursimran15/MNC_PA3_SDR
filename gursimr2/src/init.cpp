@@ -38,6 +38,7 @@ map <int,int>router_table;
 map <int,int>next_hop;
 uint16_t NUM_ROUTERS;
 uint16_t TIME_PERIOD;
+uint16_t ROUTER_PORT;
 void init_response(int sock_index)
 {
 	uint16_t payload_len, response_len;
@@ -100,6 +101,7 @@ vector<router_init> r;
 
 		if(r[i].cost == 0){
 			MYID=r[i].router_id;
+			ROUTER_PORT=r[i].r_port;
 			router_table[r[i].router_id]=r[i].cost;
 			next_hop[r[i].router_id]=r[i].router_id;
 		}else{
@@ -114,6 +116,31 @@ vector<router_init> r;
 		}
 	
   }
+}
+int create_router_sock()
+{
+    int sock;
+    struct sockaddr_in router_addr;
+    socklen_t addrlen = sizeof(router_addr);
+
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if(sock < 0)
+        ERROR("socket() failed");
+    int a[] = {1};
+    /* Make socket re-usable */
+    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
+        ERROR("setsockopt() failed");
+
+    bzero(&router_addr, sizeof(router_addr));
+
+    router_addr.sin_family = AF_INET;
+    router_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    router_addr.sin_port = htons(ROUTER_PORT);
+
+    if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
+        ERROR("bind() failed");
+
+    return sock;
 }
 
 //Create file for Routing Table response
