@@ -32,7 +32,8 @@
 #include "../include/network_util.h"
 #include "../include/control_header_lib.h"
 #include "../include/author.h"
-
+#include "../include/init.h"
+#include "../include/routertable.h"
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
     #define CNTRL_PAYLOAD_LEN_OFFSET 0x06
@@ -55,9 +56,9 @@ int create_control_sock()
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock < 0)
         ERROR("socket() failed");
-
+    int a[] = {1};
     /* Make socket re-usable */
-    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (int[]){1}, sizeof(int)) < 0)
+    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
         ERROR("setsockopt() failed");
 
     bzero(&control_addr, sizeof(control_addr));
@@ -79,7 +80,7 @@ int create_control_sock()
 
 int new_control_conn(int sock_index)
 {
-    int fdaccept, caddr_len;
+    int fdaccept; socklen_t caddr_len;
     struct sockaddr_in remote_controller_addr;
 
     caddr_len = sizeof(remote_controller_addr);
@@ -88,7 +89,7 @@ int new_control_conn(int sock_index)
         ERROR("accept() failed");
 
     /* Insert into list of active control connections */
-    connection = malloc(sizeof(struct ControlConn));
+    connection = (struct ControlConn *)malloc(sizeof(struct ControlConn));
     connection->sockfd = fdaccept;
     LIST_INSERT_HEAD(&control_conn_list, connection, next);
 
@@ -105,7 +106,7 @@ void remove_control_conn(int sock_index)
     close(sock_index);
 }
 
-bool isControl(int sock_index)
+bl isControl(int sock_index)
 {
     LIST_FOREACH(connection, &control_conn_list, next)
         if(connection->sockfd == sock_index) return TRUE;
@@ -113,7 +114,7 @@ bool isControl(int sock_index)
     return FALSE;
 }
 
-bool control_recv_hook(int sock_index)
+bl control_recv_hook(int sock_index)
 {
     char *cntrl_header, *cntrl_payload;
     uint8_t control_code;
@@ -166,10 +167,12 @@ bool control_recv_hook(int sock_index)
         case 0: author_response(sock_index);
                 break;
 
-        /* .......
-        case 1: init_response(sock_index, cntrl_payload);
+        case 1: init_payload(sock_index,cntrl_payload);
+                init_response(sock_index);
                 break;
-
+        case 2: rt_response(sock_index);
+                break;
+/*
             .........
            ....... 
          ......*/

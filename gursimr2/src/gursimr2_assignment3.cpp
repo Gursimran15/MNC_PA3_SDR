@@ -29,6 +29,7 @@
  * @param  argv The argument list
  * @return 0 EXIT_SUCCESS
  */
+uint16_t CONTROL_PORT;
 int main(int argc, char **argv)
 {
 	/*Start Here*/
