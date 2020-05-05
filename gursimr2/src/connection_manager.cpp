@@ -34,6 +34,7 @@ int control_socket, router_socket, data_socket;
 void main_loop()
 {
     int selret, sock_index, fdaccept;
+    timeval * time_val;
 
     while(TRUE){
         watch_list = master_list;

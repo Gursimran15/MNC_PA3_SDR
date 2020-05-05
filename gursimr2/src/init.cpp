@@ -24,7 +24,7 @@
 #include "../include/global.h"
 #include "../include/control_header_lib.h"
 #include "../include/network_util.h"
-
+#include "../include/init.h"
 #include <string.h>
 #include <arpa/inet.h>
 #include <vector>
@@ -39,13 +39,13 @@ map <int,int>next_hop;
 uint16_t NUM_ROUTERS;
 uint16_t TIME_PERIOD;
 uint16_t ROUTER_PORT;
-void init_response(int sock_index)
+void init_response(int sock_index,char *cntrl_payload)
 {
 	uint16_t payload_len, response_len;
 	char *cntrl_response_header, *cntrl_response_payload, *cntrl_response;
 
 	payload_len = 0; // Discount the NULL chararcter
-	// cntrl_response_payload = (char *) malloc(payload_len);
+	cntrl_response_payload = 0;
 	// memcpy(cntrl_response_payload, 0, payload_len);
 
 	cntrl_response_header = create_response_header(sock_index, 1, 0, payload_len);
@@ -56,14 +56,16 @@ void init_response(int sock_index)
 	memcpy(cntrl_response, cntrl_response_header, CNTRL_RESP_HEADER_SIZE);
 	free(cntrl_response_header);
 	/* Copy Payload */
-	// memcpy(cntrl_response+CNTRL_RESP_HEADER_SIZE, cntrl_response_payload, payload_len);
-	// free(cntrl_response_payload);
+	memcpy(cntrl_response+CNTRL_RESP_HEADER_SIZE, cntrl_response_payload, payload_len);
+	free(cntrl_response_payload);
 
 	sendALL(sock_index, cntrl_response, response_len);
 
 	free(cntrl_response);
+	init_payload(cntrl_payload);
+	
 }
-void init_payload(int sock_index,char *cntrl_payload){
+void init_payload(char *cntrl_payload){
 //save data from init control packet to routing table
 vector<router_init> r;
  uint16_t num_r;
@@ -130,7 +132,11 @@ int create_router_sock()
     /* Make socket re-usable */
     if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
         ERROR("setsockopt() failed");
-
+	int n=1;
+    	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &n, sizeof(int))<0)
+	{
+		ERROR("setsockopt() failed");
+	}
     bzero(&router_addr, sizeof(router_addr));
 
     router_addr.sin_family = AF_INET;
@@ -139,7 +145,7 @@ int create_router_sock()
 
     if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
         ERROR("bind() failed");
-
+	
     return sock;
 }
 

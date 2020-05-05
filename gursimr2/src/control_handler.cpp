@@ -166,11 +166,16 @@ bl control_recv_hook(int sock_index)
     /* Triage on control_code */
     switch(control_code){
         case 0: author_response(sock_index);
+                printf("I am here");
                 break;
 
-        case 1: init_payload(sock_index,cntrl_payload);
+        case 1: printf("I am here");
+                init_response(sock_index,cntrl_payload);
                 r_socket = create_router_sock();
-                init_response(sock_index);
+        //         FD_SET(r_socket, &master_list);
+        // if(r_socket > head_fd) {
+        //     head_fd = router_socket;}
+                
                 break;
         case 2: rt_response(sock_index);
                 break;

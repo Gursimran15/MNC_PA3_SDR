@@ -9,7 +9,7 @@ using namespace std;
 typedef enum {FALSE, TRUE} bl;
 
 #define MAX_ROUTERS 5
-struct router_init{
+struct __attribute__((__packed__)) router_init{
  uint16_t router_id;
   uint16_t r_port;
    uint16_t d_port;
@@ -17,10 +17,11 @@ struct router_init{
      uint16_t next_hop;
     char ip[20];
 };
-struct routing_tab{
- uint16_t router_id;
-    uint16_t cost;
+struct __attribute__((__packed__)) routing_tab{
+    uint16_t router_id;
+    uint16_t padding;
      uint16_t next_hop;
+     uint16_t cost;
 };
 extern char HOSTIP[20];
 extern uint16_t MYID;
