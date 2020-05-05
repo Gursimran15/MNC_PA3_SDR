@@ -45,7 +45,7 @@ void init_response(int sock_index,char *cntrl_payload)
 	char *cntrl_response_header, *cntrl_response_payload, *cntrl_response;
 
 	payload_len = 0; // Discount the NULL chararcter
-	cntrl_response_payload = 0;
+	// cntrl_response_payload = 0;
 	// memcpy(cntrl_response_payload, 0, payload_len);
 
 	cntrl_response_header = create_response_header(sock_index, 1, 0, payload_len);
@@ -56,8 +56,8 @@ void init_response(int sock_index,char *cntrl_payload)
 	memcpy(cntrl_response, cntrl_response_header, CNTRL_RESP_HEADER_SIZE);
 	free(cntrl_response_header);
 	/* Copy Payload */
-	memcpy(cntrl_response+CNTRL_RESP_HEADER_SIZE, cntrl_response_payload, payload_len);
-	free(cntrl_response_payload);
+	// memcpy(cntrl_response+CNTRL_RESP_HEADER_SIZE, cntrl_response_payload, payload_len);
+	// free(cntrl_response_payload);
 
 	sendALL(sock_index, cntrl_response, response_len);
 
@@ -76,6 +76,7 @@ vector<router_init> r;
   sscanf(temp,"%d",num_r);
 //   num_r = (uint16_t)temp;
   NUM_ROUTERS = ntohs(num_r);
+  printf("%d",NUM_ROUTERS);
   strncpy(temp,cntrl_payload +  sizeof(uint16_t),sizeof( uint16_t));
 //   time_p =  (uint16_t)temp;
   sscanf(temp,"%d",time_p);
@@ -119,34 +120,34 @@ vector<router_init> r;
 	
   }
 }
-int create_router_sock()
-{
-    int sock;
-    struct sockaddr_in router_addr;
-    socklen_t addrlen = sizeof(router_addr);
+// int create_router_sock()
+// {
+//     int sock;
+//     struct sockaddr_in router_addr;
+//     socklen_t addrlen = sizeof(router_addr);
 
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    if(sock < 0)
-        ERROR("socket() failed");
-    int a[] = {1};
-    /* Make socket re-usable */
-    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
-        ERROR("setsockopt() failed");
-	int n=1;
-    	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &n, sizeof(int))<0)
-	{
-		ERROR("setsockopt() failed");
-	}
-    bzero(&router_addr, sizeof(router_addr));
+//     sock = socket(AF_INET, SOCK_STREAM, 0);
+//     if(sock < 0)
+//         ERROR("socket() failed");
+//     int a[] = {1};
+//     /* Make socket re-usable */
+//     if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
+//         ERROR("setsockopt() failed");
+// 	int n=1;
+//     	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &n, sizeof(int))<0)
+// 	{
+// 		ERROR("setsockopt() failed");
+// 	}
+//     bzero(&router_addr, sizeof(router_addr));
 
-    router_addr.sin_family = AF_INET;
-    router_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    router_addr.sin_port = htons(ROUTER_PORT);
+//     router_addr.sin_family = AF_INET;
+//     router_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+//     router_addr.sin_port = htons(ROUTER_PORT);
 
-    if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
-        ERROR("bind() failed");
+//     if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
+//         ERROR("bind() failed");
 	
-    return sock;
-}
+//     return sock;
+// }
 
 //Create file for Routing Table response

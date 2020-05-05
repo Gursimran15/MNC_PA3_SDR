@@ -171,7 +171,7 @@ bl control_recv_hook(int sock_index)
 
         case 1: printf("I am here");
                 init_response(sock_index,cntrl_payload);
-                r_socket = create_router_sock();
+                // r_socket = create_router_sock();
         //         FD_SET(r_socket, &master_list);
         // if(r_socket > head_fd) {
         //     head_fd = router_socket;}
