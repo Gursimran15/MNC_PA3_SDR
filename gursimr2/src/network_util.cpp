@@ -25,7 +25,8 @@
 
 #include <stdlib.h>
 #include <sys/socket.h>
-
+#include <iostream>
+using namespace std;
 ssize_t recvALL(int sock_index, char *buffer, ssize_t nbytes)
 {
     ssize_t bytes = 0;
@@ -34,7 +35,6 @@ ssize_t recvALL(int sock_index, char *buffer, ssize_t nbytes)
     if(bytes == 0) return -1;
     while(bytes != nbytes)
         bytes += recv(sock_index, buffer+bytes, nbytes-bytes, 0);
-
     return bytes;
 }
 

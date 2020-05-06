@@ -27,7 +27,8 @@
 #include <sys/queue.h>
 #include <unistd.h>
 #include <string.h>
-
+#include <iostream>
+using namespace std;
 #include "../include/global.h"
 #include "../include/network_util.h"
 #include "../include/control_header_lib.h"
@@ -47,7 +48,12 @@ struct ControlConn
     LIST_ENTRY(ControlConn) next;
 }*connection, *conn_temp;
 LIST_HEAD(ControlConnsHead, ControlConn) control_conn_list;
-
+// struct DataConn
+// {
+//     int sockfd;
+//     LIST_ENTRY(DataConn) next;
+// }*connection, *conn_temp;
+// LIST_HEAD(DataConnsHead, DataConn) data_conn_list;
 int create_control_sock()
 {
     int sock;
@@ -117,10 +123,11 @@ bl isControl(int sock_index)
 
 bl control_recv_hook(int sock_index)
 {
+     printf("I am here 4");
     char *cntrl_header, *cntrl_payload;
     uint8_t control_code;
     uint16_t payload_len;
-    int r_socket;
+    // int r_socket;
     /* Get control header */
     cntrl_header = (char *) malloc(sizeof(char)*CNTRL_HEADER_SIZE);
     bzero(cntrl_header, CNTRL_HEADER_SIZE);
@@ -148,38 +155,48 @@ bl control_recv_hook(int sock_index)
         memcpy(&payload_len, cntrl_header+CNTRL_PAYLOAD_LEN_OFFSET, sizeof(payload_len));
         payload_len = ntohs(payload_len);
     #endif
-
     free(cntrl_header);
-
+    cout<<payload_len<<"\n";
     /* Get control payload */
     if(payload_len != 0){
         cntrl_payload = (char *) malloc(sizeof(char)*payload_len);
         bzero(cntrl_payload, payload_len);
-
+         cout<<payload_len<<"\n";
+         cout<<cntrl_payload<<"\n";
         if(recvALL(sock_index, cntrl_payload, payload_len) < 0){
             remove_control_conn(sock_index);
             free(cntrl_payload);
             return FALSE;
         }
     }
+    // std::cout<<cntrl_payload;
 
     /* Triage on control_code */
     switch(control_code){
         case 0: author_response(sock_index);
-                printf("I am here");
+                printf("I am here author\n");
                 break;
 
-        case 1: printf("I am here");
-                init_response(sock_index,cntrl_payload);
-                // r_socket = create_router_sock();
-        //         FD_SET(r_socket, &master_list);
-        // if(r_socket > head_fd) {
+        case 1: printf("I am here init\n");
+            
+                init_payload(cntrl_payload);
+        //         router_socket = create_router_sock();
+        //         FD_SET(router_socket, &master_list);
+        // if(router_socket > head_fd) {
         //     head_fd = router_socket;}
-                
+        //         data_socket = create_data_sock();
+        //         FD_SET(data_socket, &master_list);
+        // if(data_socket > head_fd) {
+        //     head_fd = router_socket;}
+            printf("\nI am here response\n");
+            init_response(sock_index);
                 break;
-        case 2: rt_response(sock_index);
+        case 2: 
+        // if(init_rt)
+                std::cout<<"I am here rt\n";
+                rt_response(sock_index);
                 break;
-/*
+ /*
             .........
            ....... 
          ......*/

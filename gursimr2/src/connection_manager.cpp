@@ -45,18 +45,18 @@ void main_loop()
 
         /* Loop through file descriptors to check which ones are ready */
         for(sock_index=0; sock_index<=head_fd; sock_index+=1){
-
+            printf("I am here 1");
             if(FD_ISSET(sock_index, &watch_list)){
 
                 /* control_socket */
                 if(sock_index == control_socket){
                     fdaccept = new_control_conn(sock_index);
-
+                     printf("I am here 2");
                     /* Add to watched socket list */
                     FD_SET(fdaccept, &master_list);
                     if(fdaccept > head_fd) head_fd = fdaccept;
                 }
-
+               
                 /* router_socket */
                 else if(sock_index == router_socket){
                     //call handler that will call recvfrom() .....
@@ -70,6 +70,7 @@ void main_loop()
                 /* Existing connection */
                 else{
                     if(isControl(sock_index)){
+                         printf("I am here 3");
                         if(!control_recv_hook(sock_index)) FD_CLR(sock_index, &master_list);
                     }
                     //else if isData(sock_index);
