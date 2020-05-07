@@ -86,7 +86,7 @@ rtresponse[i]->padding+=htons(padding);
 rtresponse[i]->next_hop+=htons(rt[i].next_hop);
 rtresponse[i]->cost+=htons(rt[i].cost);
 // std::cout<<buffer<<"\n";
-memcpy(payload + i*sizeof(routing_tab_payload), &rtresponse[i], sizeof(routing_tab_payload));
+memcpy(payload + i*sizeof(rtresponse[i]), rtresponse[i], sizeof(rtresponse[i])); //error here
 std::cout<<ntohs(rtresponse[i]->router_id)<<"\n";
 }
 std::cout<<"I am here rt-payload in response- "<<payload<<"\n";

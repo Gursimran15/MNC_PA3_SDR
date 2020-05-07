@@ -33,10 +33,11 @@ using namespace std;
 #include <stdlib.h>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include "../include/logger.h"
 FILE *fp ;
 static int SESSION_TRACKER; //Keeps track of session
-std::string logname = "/tmp/gursimr2_";
+std::string logname = "/tmp/gursimr2.txt";
 
 char* print_time()
 {
@@ -60,9 +61,9 @@ char* print_time()
 
 void log_print(char* filename, int line, char *fmt,...)
 {
-    va_list         list;
-    char            *p, *r;
-    int             e;
+    va_list list;
+    char *p, *r;
+    int e;
 
     
     if(SESSION_TRACKER > 0)
@@ -126,7 +127,7 @@ uint16_t CONTROL_PORT;
 int main(int argc, char **argv)
 {
 	/*Start Here*/
-    
+    // logname += std::to_string(getpid());
     sscanf(argv[1], "%" SCNu16, &CONTROL_PORT);
     LOG_PRINT("I am in Main\n");
     init(); // Initialize connection manager; This will block

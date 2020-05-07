@@ -178,7 +178,7 @@ bl control_recv_hook(int sock_index)
                 break;
 
         case 1: printf("I am here init\n");
-            
+                // LOG_PRINT("I am inside init case\n");
                 init_payload(cntrl_payload);
         //         router_socket = create_router_sock();
         //         FD_SET(router_socket, &master_list);
