@@ -20,11 +20,34 @@
  *
  * This contains the main function. Add further description here....
  */
+// #include <string.h>
+// #include <sys/select.h>
+// #include <sys/socket.h>
+// #include <netinet/in.h>
+// #include <strings.h>
+// #include <sys/queue.h>
+// #include <unistd.h>
+// #include <iostream>
+// #include <arpa/inet.h>
+// #include <vector>
+// #include <string>
+// #include <stdlib.h>
+// #include <iterator>
+// using namespace std;
 
+
+#include "../include/global.h"
+#include "../include/connection_manager.h"
+/**
+ * main function
+ *
+ * @param  argc Number of arguments
+ * @param  argv The argument list
+ * @return 0 EXIT_SUCCESS
+ */
 void log_print(char* filename, int line, char *fmt,...);
 #define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
 
-using namespace std;
 /* logger.c */
 #include <stdio.h>
 #include <stdarg.h>
@@ -113,21 +136,11 @@ void log_print(char* filename, int line, char *fmt,...)
     SESSION_TRACKER++;
     fclose(fp);
 }
-
-#include "../include/global.h"
-#include "../include/connection_manager.h"
-/**
- * main function
- *
- * @param  argc Number of arguments
- * @param  argv The argument list
- * @return 0 EXIT_SUCCESS
- */
 uint16_t CONTROL_PORT;
 int main(int argc, char **argv)
 {
 	/*Start Here*/
-    // logname += std::to_string(getpid());
+    logname += std::to_string(getpid());
     sscanf(argv[1], "%" SCNu16, &CONTROL_PORT);
     LOG_PRINT("I am in Main\n");
     init(); // Initialize connection manager; This will block

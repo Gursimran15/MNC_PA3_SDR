@@ -22,10 +22,12 @@
  */
 
 #include "../include/global.h"
-#include "../include/control_header_lib.h"
 #include "../include/network_util.h"
+#include "../include/control_header_lib.h"
+#include "../include/author.h"
 #include "../include/init.h"
-#include "../include/logger.h"
+#include "../include/routertable.h"
+#include "../include/connection_manager.h"
 #include <string.h>
 #include <arpa/inet.h>
 #include <vector>
@@ -34,6 +36,99 @@
 #include <netinet/in.h>
 #include <iostream>
 using namespace std;
+void log_print(char* filename, int line, char *fmt,...);
+#define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
+// void log_print(char* filename, int line, char *fmt,...);
+// #define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
+
+// /* logger.c */
+// #include <stdio.h>
+// #include <stdarg.h>
+// #include <time.h>
+// #include <string.h>
+// #include <stdlib.h>
+// #include <iostream>
+// #include <string>
+// #include <unistd.h>
+// #include "../include/logger.h"
+// FILE *fp ;
+// static int SESSION_TRACKER; //Keeps track of session
+// std::string logname = "/tmp/gursimr2init.txt";
+
+// char* print_time()
+// {
+//     int size = 0;
+//     time_t t;
+//     char *buf;
+    
+//     t=time(NULL); /* get current calendar time */
+    
+//     char *timestr = asctime( localtime(&t) );
+//     timestr[strlen(timestr) - 1] = 0;  //Getting rid of \n
+    
+//     size = strlen(timestr)+ 1 + 2; //Additional +2 for square braces
+//     buf = (char*)malloc(size);
+    
+//     memset(buf, 0x0, size);
+//     snprintf(buf,size,"[%s]", timestr);
+   
+//     return buf;
+// }
+
+// void log_print(char* filename, int line, char *fmt,...)
+// {
+//     va_list list;
+//     char *p, *r;
+//     int e;
+
+    
+//     if(SESSION_TRACKER > 0)
+//       fp = fopen (logname.c_str(),"a+");
+//     else {
+//       fp = fopen (logname.c_str(),"w");
+//     }
+//     fprintf(fp,"%s ",print_time());
+//     fprintf(fp,"[%s][line: %d] ",filename,line);
+//     va_start( list, fmt );
+
+//     for ( p = fmt ; *p ; ++p )
+//     {
+//         if ( *p != '%' )//If simple string
+//         {
+//             fputc( *p,fp );
+//         }
+//         else
+//         {
+//             switch ( *++p )
+//             {
+//                 /* string */
+//             case 's':
+//             {
+//                 r = va_arg( list, char * );
+
+//                 fprintf(fp,"%s", r);
+//                 continue;
+//             }
+
+//             /* integer */
+//             case 'd':
+//             {
+//                 e = va_arg( list, int );
+
+//                 fprintf(fp,"%d", e);
+//                 continue;
+//             }
+
+//             default:
+//                 fputc( *p, fp );
+//             }
+//         }
+//     }
+//     va_end( list );
+//     fputc( '\n', fp );
+//     SESSION_TRACKER++;
+//     fclose(fp);
+// }
 // struct DataConn
 // {
 //         int sockfd;
@@ -49,13 +144,14 @@ uint16_t TIME_PERIOD;
 uint16_t ROUTER_PORT;
 uint16_t DATA_PORT;
 ROUTER_TABLE rt[MAX_ROUTERS];
+#include "../include/logger.h"
 // bool init_rt=false;
 void init_response(int sock_index)
 {
-	uint16_t payload_len, response_len;
+	uint16_t payload_len=0, response_len=0;
 	char *cntrl_response_header, *cntrl_response_payload, *cntrl_response;
-	// LOG_PRINT("I am inside init\n");
-	payload_len = 0; // Discount the NULL chararcter
+	// LOG_PRINT("I am inside init response\n");
+	// payload_len = 0; // Discount the NULL chararcter
 	// cntrl_response_payload = 0;
 	// memcpy(cntrl_response_payload, 0, payload_len);
 
@@ -65,19 +161,22 @@ void init_response(int sock_index)
 	cntrl_response = (char *) malloc(response_len);
 	/* Copy Header */
 	memcpy(cntrl_response, cntrl_response_header, CNTRL_RESP_HEADER_SIZE);
-	free(cntrl_response_header);
+	
 	/* Copy Payload */
 	// memcpy(cntrl_response+CNTRL_RESP_HEADER_SIZE, cntrl_response_payload, payload_len);
 	// free(cntrl_response_payload);
 
 	sendALL(sock_index, cntrl_response, response_len);
-
+	// LOG_PRINT("%d\n",response_len);
+	// LOG_PRINT("Init Response Sent\n");
+	free(cntrl_response_header);
 	free(cntrl_response);
 	
 }
 void init_payload(char *cntrl_payload){
 //save data from init control packet to routing table
 // vector<router_init> r;
+// LOG_PRINT("I am inside init payload\n");
 struct CONTROL_PAYLOAD *p=(struct CONTROL_PAYLOAD *) cntrl_payload;
  uint16_t num_r;
   uint16_t time_p;
@@ -124,7 +223,7 @@ TIME_PERIOD = time_p;
 		cout<<rt[i].next_hop<<"\n";
 		cout<<rt[i].neighbour<<"\n";
   }
-
+// LOG_PRINT("exit init payload\n");
 //   cout<<r[0].router_id<<"\n";
 //   cout<<r[0].r_port<<"\n";
 //   char* temp;
@@ -189,60 +288,60 @@ TIME_PERIOD = time_p;
 	
 //   }
 }
-// int create_router_sock()
-// {
-//     int sock;
-//     struct sockaddr_in router_addr;
-//     socklen_t addrlen = sizeof(router_addr);
+int create_router_sock()
+{
+    int sock;
+    struct sockaddr_in router_addr;
+    socklen_t addrlen = sizeof(router_addr);
 
-//     sock = socket(AF_INET, SOCK_DGRAM, 0);
-//     if(sock < 0)
-//         ERROR("socket() failed");
-//     int a[] = {1};
-//     // /* Make socket re-usable */
-//     // if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
-//     //     ERROR("setsockopt() failed");
-//     bzero(&router_addr, sizeof(router_addr));
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if(sock < 0)
+        ERROR("socket() failed");
+    int a[] = {1};
+    // /* Make socket re-usable */
+    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
+        ERROR("setsockopt() failed");
+    bzero(&router_addr, sizeof(router_addr));
 
-//     router_addr.sin_family = AF_INET;
-//     router_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-//     router_addr.sin_port = htons(ROUTER_PORT);
+    router_addr.sin_family = AF_INET;
+    router_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    router_addr.sin_port = htons(ROUTER_PORT);
 
-//     if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
-//         ERROR("bind() failed");
+    if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
+        ERROR("bind() failed");
 	
-//     return sock;
-// }
+    return sock;
+}
 // //will move to data file
-// int create_data_sock()
-// {
-//     int sock;
-//     struct sockaddr_in data_addr;
-//     socklen_t addrlen = sizeof(data_addr);
+int create_data_sock()
+{
+    int sock;
+    struct sockaddr_in data_addr;
+    socklen_t addrlen = sizeof(data_addr);
 
-//     sock = socket(AF_INET, SOCK_STREAM, 0);
-//     if(sock < 0)
-//         ERROR("socket() failed");
-//     int a[] = {1};
-//     /* Make socket re-usable */
-//     if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
-//         ERROR("setsockopt() failed");
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if(sock < 0)
+        ERROR("socket() failed");
+    int a[] = {1};
+    /* Make socket re-usable */
+    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, a, sizeof(int)) < 0)
+        ERROR("setsockopt() failed");
 
-//     bzero(&data_addr, sizeof(data_addr));
+    bzero(&data_addr, sizeof(data_addr));
 
-//     data_addr.sin_family = AF_INET;
-//     data_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-//     data_addr.sin_port = htons(DATA_PORT);
+    data_addr.sin_family = AF_INET;
+    data_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    data_addr.sin_port = htons(DATA_PORT);
 
-//     if(bind(sock, (struct sockaddr *)&data_addr, sizeof(data_addr)) < 0)
-//         ERROR("bind() failed");
+    if(bind(sock, (struct sockaddr *)&data_addr, sizeof(data_addr)) < 0)
+        ERROR("bind() failed");
 
-//     if(listen(sock, 5) < 0)
-//         ERROR("listen() failed");
+    if(listen(sock, 5) < 0)
+        ERROR("listen() failed");
 
-//     // LIST_INIT(&control_conn_list);
+    // LIST_INIT(&control_conn_list);
 
-//     return sock;
-// }
+    return sock;
+}
 
 //Create file for Routing Table response

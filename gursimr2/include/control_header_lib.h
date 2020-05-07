@@ -4,7 +4,7 @@
 #define CNTRL_HEADER_SIZE 8
 #define CNTRL_RESP_HEADER_SIZE 8
 
-#define PACKET_USING_STRUCT // Comment this out to use alternate packet crafting technique
+// #define PACKET_USING_STRUCT // Comment this out to use alternate packet crafting technique
 
 #ifdef PACKET_USING_STRUCT
     struct __attribute__((__packed__)) CONTROL_HEADER

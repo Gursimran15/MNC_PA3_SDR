@@ -22,9 +22,12 @@
  */
 
 #include "../include/global.h"
-#include "../include/control_header_lib.h"
 #include "../include/network_util.h"
+#include "../include/control_header_lib.h"
+#include "../include/author.h"
+#include "../include/init.h"
 #include "../include/routertable.h"
+#include "../include/connection_manager.h"
 #include <string.h>
 #include <arpa/inet.h>
 #include <vector>
@@ -32,15 +35,18 @@
 #include <string>
 #include <netinet/in.h>
 #include <iostream>
+#include "../include/logger.h"
 using namespace std;
 // //ERROR IN THIS FILE
 // uint16_t NUM_ROUTERS;
 // ROUTER_TABLE rt[MAX_ROUTERS];
 // // #define AUTHOR_STATEMENT "I, gursimr2, have read and understood the course academic integrity policy."
+void log_print(char* filename, int line, char *fmt,...);
+#define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
 void rt_response(int sock_index)
 {
 	std::cout<<"I am here rt-response\n";
-	uint16_t payload_len, response_len;
+	uint16_t payload_len=0, response_len=0;
 	char *cntrl_response_header, *cntrl_response_payload, *cntrl_response;
 	uint16_t padding=0,tmp=0,o=0,num=NUM_ROUTERS;
     // char* payload= rt_payload(sock_index);

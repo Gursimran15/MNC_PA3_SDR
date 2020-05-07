@@ -52,13 +52,12 @@ extern uint16_t DATA_PORT;
 extern fd_set master_list, watch_list;
 extern int head_fd;
 #define ERROR(err_msg) {perror(err_msg); exit(EXIT_FAILURE);}
-
+void log_print(char* filename, int line, char *fmt,...);
+#define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
 /* https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/ */
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)])) // Interesting stuff to read if you are interested to know how this works
 
 extern uint16_t CONTROL_PORT;
-void log_print(char* filename, int line, char *fmt,...);
-char* print_time();
-#define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
+
 
 #endif

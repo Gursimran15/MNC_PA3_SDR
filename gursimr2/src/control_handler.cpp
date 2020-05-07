@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
+#include "../include/logger.h"
 using namespace std;
 #include "../include/global.h"
 #include "../include/network_util.h"
@@ -40,7 +41,8 @@ using namespace std;
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
     #define CNTRL_PAYLOAD_LEN_OFFSET 0x06
 #endif
-
+void log_print(char* filename, int line, char *fmt,...);
+#define LOG_PRINT(...) log_print(__FILE__, __LINE__, __VA_ARGS__ )
 /* Linked List for active control connections */
 struct ControlConn
 {
@@ -54,6 +56,8 @@ LIST_HEAD(ControlConnsHead, ControlConn) control_conn_list;
 //     LIST_ENTRY(DataConn) next;
 // }*connection, *conn_temp;
 // LIST_HEAD(DataConnsHead, DataConn) data_conn_list;
+
+
 int create_control_sock()
 {
     int sock;
@@ -175,26 +179,32 @@ bl control_recv_hook(int sock_index)
     switch(control_code){
         case 0: author_response(sock_index);
                 printf("I am here author\n");
+                 LOG_PRINT("I am in Author\n");
                 break;
 
         case 1: printf("I am here init\n");
-                // LOG_PRINT("I am inside init case\n");
+            
+                LOG_PRINT("I am inside init case\n");
                 init_payload(cntrl_payload);
-        //         router_socket = create_router_sock();
-        //         FD_SET(router_socket, &master_list);
-        // if(router_socket > head_fd) {
-        //     head_fd = router_socket;}
-        //         data_socket = create_data_sock();
-        //         FD_SET(data_socket, &master_list);
-        // if(data_socket > head_fd) {
-        //     head_fd = router_socket;}
+                 LOG_PRINT("I am after Init Payload\n");
+                router_socket = create_router_sock();
+                FD_SET(router_socket, &master_list);
+        if(router_socket > head_fd) {
+            head_fd = router_socket;}
+                data_socket = create_data_sock();
+                FD_SET(data_socket, &master_list);
+        if(data_socket > head_fd) {
+            head_fd = router_socket;}
             printf("\nI am here response\n");
             init_response(sock_index);
+             LOG_PRINT("I am after Init\n");
                 break;
         case 2: 
         // if(init_rt)
+         LOG_PRINT("I am in rt\n");
                 std::cout<<"I am here rt\n";
                 rt_response(sock_index);
+          LOG_PRINT("I am after rt\n");
                 break;
  /*
             .........
