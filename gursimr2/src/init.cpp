@@ -103,19 +103,19 @@ TIME_PERIOD = time_p;
 			rt[i].router_id = ntohs(rti->router_id);
 			rt[i].cost=ntohs(rti->cost);
 			rt[i].next_hop=ntohs(rti->router_id);
-			rt[i].neighbour = false;
+			rt[i].neighbour = FALSE;
 		}else{
 			if(ntohs(rti->cost) == 65535){
 				rt[i].router_id = ntohs(rti->router_id);
 				rt[i].cost=ntohs(rti->cost);
 				rt[i].next_hop=ntohs(rti->cost);
-				rt[i].neighbour = false;
+				rt[i].neighbour = FALSE;
 
 			}else{
 				rt[i].router_id=ntohs(rti->router_id);
 				rt[i].cost=ntohs(rti->cost);
 				rt[i].next_hop=ntohs(rti->router_id);
-				rt[i].neighbour = true;
+				rt[i].neighbour = TRUE;
 
 			}
 		}

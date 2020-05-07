@@ -67,27 +67,44 @@ void rt_response(int sock_index)
 }
 char* rt_payload(int sock_index){
 //save data from init control packet to routing table
- char* payload=new char[8*NUM_ROUTERS];
+ char* payload=new char[8*MAX_ROUTERS];
  char *buffer;
 //  payload = (char *) malloc(sizeof(char)*);
 //  payload = (char *) malloc(sizeof(char)*8);
- struct routing_tab_payload *rtresponse[NUM_ROUTERS];
+ routing_tab_payload rtresponse[MAX_ROUTERS];
  uint16_t padding=0;
  std::cout<<"I am here rt-payload\n";
  std::cout<<NUM_ROUTERS<<"\n";
- 	std::cout<<rt[0].router_id<<"\n";
-	 	std::cout<<rt[0].neighbour<<"\n";
+ 	// std::cout<<rt[0].router_id<<"\n";
+	//  	std::cout<<rt[0].neighbour<<"\n";
 for(int i=0;i<NUM_ROUTERS;i++){
-	std::cout<<rt[i].router_id<<"\n";
-	std::cout<<padding<<"\n";
+	// std::cout<<rt[i].router_id<<"\n";
+	// std::cout<<padding<<"\n";
 	// rtresponse[i] = (struct routing_tab_payload *) (buffer);
-rtresponse[i]->router_id=htons(rt[i].router_id);
-rtresponse[i]->padding+=htons(padding);
-rtresponse[i]->next_hop+=htons(rt[i].next_hop);
-rtresponse[i]->cost+=htons(rt[i].cost);
+	cout<<rt[i].router_id<<"\n";
+		cout<<rt[i].cost<<"\n";
+		cout<<rt[i].next_hop<<"\n";
+		cout<<rt[i].neighbour<<"\n";
+rtresponse[i].router_id=htons(rt[i].router_id);
+rtresponse[i].padding=htons(padding);
+rtresponse[i].next_hop=htons(rt[i].next_hop);
+rtresponse[i].cost=htons(rt[i].cost);
+cout<<rtresponse[i].router_id<<"\n";
+		cout<<rtresponse[i].cost<<"\n";
+		cout<<rtresponse[i].next_hop<<"\n";
+		cout<<rtresponse[i].padding<<"\n";
+	memcpy(payload + i*(0x08),&rtresponse[i],(0x08));
+	// memcpy(payload + i*sizeof(rtresponse[i]) + 2,&rtresponse[i].padding,sizeof(rtresponse[i].padding));
+	// memcpy(payload + i*sizeof(rtresponse[i]) + 4,&rtresponse[i].next_hop,sizeof(rtresponse[i].next_hop));
+	// memcpy(payload + i*sizeof(rtresponse[i]) + 6,&rtresponse[i].cost,sizeof(rtresponse[i].cost));
+	cout<<payload<<"\n";
 // std::cout<<buffer<<"\n";
-memcpy(payload + i*sizeof(rtresponse[i]), rtresponse[i], sizeof(rtresponse[i])); //error here
-std::cout<<ntohs(rtresponse[i]->router_id)<<"\n";
+//cout<<sizeof(rtresponse[i])<<"\n";
+// cout<<sizeof(rtresponse)<<"\n";
+// cout<<sizeof(struct routing_tab_payload *)<<"\n";
+
+// memcpy(payload + i*sizeof(rtresponse[i]), rtresponse[i], sizeof(rtresponse[i])); //error here
+// std::cout<<ntohs(rtresponse[i]->router_id)<<"\n";
 }
 std::cout<<"I am here rt-payload in response- "<<payload<<"\n";
 return payload;

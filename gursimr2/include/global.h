@@ -25,10 +25,10 @@ struct routing_tab_payload{
      uint16_t cost;
 };
 struct router_table{
-int router_id;
-int cost;
-int next_hop;
-bool neighbour;
+uint16_t router_id;
+uint16_t cost;
+uint16_t next_hop;
+bl neighbour;
 };
 struct CONTROL_PAYLOAD{
 uint16_t num_r;
