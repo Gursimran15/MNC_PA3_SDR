@@ -485,7 +485,7 @@ void rt_response(int sock_index)
 	uint16_t padding=0,tmp=0,o=0,num=NUM_ROUTERS;
     // char* payload= rt_payload(sock_index);
 	//std::cout<<"I am here rt-payload in response- "<<payload<<"\n";
-	payload_len = (sizeof(uint16_t))*4*5;// Discount the NULL chararcter
+	payload_len = (sizeof(uint16_t))*4*NUM_ROUTERS;// Discount the NULL chararcter
 	cntrl_response_payload = (char *) malloc(payload_len);
 	cntrl_response_header = create_response_header(sock_index, 2, 0, payload_len);
 	std::cout<<"I am here rt-payload length in response- "<<payload_len<<"\n";
