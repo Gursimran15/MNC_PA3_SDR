@@ -98,12 +98,14 @@ uint16_t u_intv;
 // uint16_t cost[MAX_ROUTERS];
 // char ip[MAX_ROUTERS][INET_ADDRSTRLEN];
 };
+char *dv_payload=0;
 typedef struct router_table ROUTER_TABLE;
-char HOSTIP[20];
+uint32_t HOSTIP;
 uint16_t MYID;
 ROUTER_TABLE rt[MAX_ROUTERS];
+router_init rt_init[MAX_ROUTERS];
 uint16_t NUM_ROUTERS;
-uint16_t TIME_PERIOD;
+uint16_t TIME_PERIOD = 0;
 uint16_t ROUTER_PORT;
 uint16_t DATA_PORT;
 fd_set master_list, watch_list;
@@ -304,6 +306,16 @@ ssize_t sendALL(int sock_index, char *buffer, ssize_t nbytes)
 
     return bytes;
 }
+ssize_t	sendALLtoip(int sock_index, char *buffer, ssize_t nbytes,const struct sockaddr *dest_addr, socklen_t addrlen){
+ssize_t bytes = 0;
+    bytes = sendto(sock_index, buffer, nbytes, 0,dest_addr,addrlen);
+
+    if(bytes == 0) return -1;
+    while(bytes != nbytes)
+        bytes += sendto(sock_index, buffer+bytes, nbytes-bytes, 0,dest_addr,addrlen);
+
+    return bytes;
+}
 //AUTHOR
 #define AUTHOR_STATEMENT "I, gursimr2, have read and understood the course academic integrity policy."
 
@@ -345,7 +357,7 @@ void init_response(int sock_index)
 {
 	uint16_t payload_len=0, response_len=0;
 	char *cntrl_response_header, *cntrl_response_payload, *cntrl_response;
-	// LOG_PRINT("I am inside init response\n");
+	LOG_PRINT("I am inside init response\n");
 	// payload_len = 0; // Discount the NULL chararcter
 	// cntrl_response_payload = 0;
 	// memcpy(cntrl_response_payload, 0, payload_len);
@@ -362,8 +374,8 @@ void init_response(int sock_index)
 	// free(cntrl_response_payload);
 
 	sendALL(sock_index, cntrl_response, response_len);
-	// LOG_PRINT("%d\n",response_len);
-	// LOG_PRINT("Init Response Sent\n");
+	LOG_PRINT("%d\n",response_len);
+	LOG_PRINT("Init Response Sent\n");
 	free(cntrl_response_header);
 	free(cntrl_response);
 	
@@ -394,18 +406,34 @@ TIME_PERIOD = time_p;
 			MYID=ntohs(rti->router_id);
 			ROUTER_PORT=ntohs(rti->r_port);
 			DATA_PORT = ntohs(rti->d_port);
+            rt_init[i].router_id = rti->router_id;
+            rt_init[i].r_port = rti->r_port;
+            rt_init[i].d_port = rti->d_port;
+            rt_init[i].cost = rti->cost;
+            rt_init[i].ip = rti->ip;
+            HOSTIP = rti->ip;
 			rt[i].router_id = ntohs(rti->router_id);
 			rt[i].cost=ntohs(rti->cost);
 			rt[i].next_hop=ntohs(rti->router_id);
 			rt[i].neighbour = FALSE;
 		}else{
 			if(ntohs(rti->cost) == 65535){
+                 rt_init[i].router_id = rti->router_id;
+            rt_init[i].r_port = rti->r_port;
+            rt_init[i].d_port = rti->d_port;
+            rt_init[i].cost = rti->cost;
+            rt_init[i].ip = rti->ip;
 				rt[i].router_id = ntohs(rti->router_id);
 				rt[i].cost=ntohs(rti->cost);
 				rt[i].next_hop=ntohs(rti->cost);
 				rt[i].neighbour = FALSE;
 
 			}else{
+                 rt_init[i].router_id = rti->router_id;
+            rt_init[i].r_port = rti->r_port;
+            rt_init[i].d_port = rti->d_port;
+            rt_init[i].cost = rti->cost;
+            rt_init[i].ip = rti->ip;
 				rt[i].router_id=ntohs(rti->router_id);
 				rt[i].cost=ntohs(rti->cost);
 				rt[i].next_hop=ntohs(rti->router_id);
@@ -417,6 +445,25 @@ TIME_PERIOD = time_p;
 		cout<<rt[i].cost<<"\n";
 		cout<<rt[i].next_hop<<"\n";
 		cout<<rt[i].neighbour<<"\n";
+        cout<<ntohs(rt_init[i].router_id)<<"\n";
+        cout<<ntohs(rt_init[i].r_port)<<"\n";
+        cout<<ntohs(rt_init[i].d_port)<<"\n";
+        cout<<ntohs(rt_init[i].cost)<<"\n";
+        cout<<ntohs(rt_init[i].ip)<<"\n";
+         LOG_PRINT("RT SAVED");
+        LOG_PRINT("%d\n",(rt[i].router_id));
+        LOG_PRINT("%d\n",(rt[i].next_hop));
+        LOG_PRINT("%d\n",(rt[i].neighbour));
+        LOG_PRINT("%d\n",(rt[i].cost));
+        LOG_PRINT("INIT INFO SAVED");
+        LOG_PRINT("%d\n",ntohs(rt_init[i].router_id));
+        LOG_PRINT("%d\n",ntohs(rt_init[i].r_port));
+        LOG_PRINT("%d\n",ntohs(rt_init[i].d_port));
+        LOG_PRINT("%d\n",ntohs(rt_init[i].cost));
+        LOG_PRINT("%d\n",ntohs(rt_init[i].ip));
+        LOG_PRINT("Neighbour?");
+        LOG_PRINT("%d\n",rt[i].neighbour);
+        // LOG_PRINT("%s\n",rt[i].neighbour);
   }
 
 }
@@ -441,6 +488,10 @@ int create_router_sock()
 
     if(bind(sock, (struct sockaddr *)&router_addr, sizeof(router_addr)) < 0)
         ERROR("bind() failed");
+    
+    // if(listen(sock, 5) < 0)
+    //     ERROR("listen() failed");
+
 	
     return sock;
 }
@@ -531,8 +582,78 @@ void rt_response(int sock_index)
 
 	free(cntrl_response);
 }
+void create_dv_payload(){
+    LOG_PRINT("Inside dv pay");
+uint16_t payload_len = ((sizeof(uint16_t))*4 + (sizeof(uint32_t)))*NUM_ROUTERS + 2*(sizeof(uint16_t)) + (sizeof(uint32_t));// Discount the NULL chararcter
+	dv_payload = (char *) malloc(payload_len);
+    uint16_t num=0,tmp=0,o=0,padding=0;
+    num = NUM_ROUTERS;
+    uint16_t rport,update_f;
+    rport=htons(ROUTER_PORT);
+    update_f = htons(NUM_ROUTERS);
+    memcpy(dv_payload+ o,&update_f,2);
+			o+=2;
+			cout<<ntohs(update_f)<<"\n";
+    memcpy(dv_payload+ o,&rport,2);
+			o+=2;
+			cout<<ntohs(rport)<<"\n";
+    memcpy(dv_payload+ o,&HOSTIP,4);
+			o+=4;
+			cout<<ntohs(HOSTIP)<<"\n";
+    for(int i=0;i<num;i++){
+			tmp=htons(rt_init[i].ip);
+			memcpy(dv_payload + o,&tmp,4);
+			o+=4;
+			cout<<ntohs(tmp)<<"\n";
 
+			tmp=htons(rt_init[i].r_port);
+			memcpy(dv_payload + o,&tmp,2);
+			o+=2;
+			cout<<ntohs(tmp)<<"\n";
+            
+            tmp=htons(padding);
+			memcpy(dv_payload + o,&tmp,2);
+			o+=2;
+			cout<<ntohs(tmp)<<"\n";
+            
+            tmp=htons(rt_init[i].router_id);
+			memcpy(dv_payload + o,&tmp,2);
+			o+=2;
+			cout<<ntohs(tmp)<<"\n";
+            
+            tmp=htons(rt_init[i].cost);
+			memcpy(dv_payload + o,&tmp,2);
+			o+=2;
+			cout<<ntohs(tmp)<<"\n";
+			}
+            LOG_PRINT("Finish dv pay");
+}
+void dv_send(){
+    uint16_t payload_len = ((sizeof(uint16_t))*4 + (sizeof(uint32_t)))*NUM_ROUTERS + 2*(sizeof(uint16_t)) + (sizeof(uint32_t));
+for(int i=0;i<NUM_ROUTERS;i++){
+     if(rt[i].neighbour == 1){
+     int sock;
+    struct sockaddr_in router_addr;
+    socklen_t addrlen = sizeof(router_addr);
 
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if(sock < 0)
+        ERROR("socket() failed");
+
+    bzero(&router_addr, sizeof(router_addr));
+
+    router_addr.sin_family = AF_INET;
+    router_addr.sin_addr.s_addr = rt_init[i].ip;
+    router_addr.sin_port = rt_init[i].r_port;
+	sendALLtoip(sock,dv_payload,payload_len,(struct sockaddr *)&router_addr,(socklen_t)sizeof(router_addr));
+    close(sock);
+    LOG_PRINT("Inside Neighbour if");
+     }
+     LOG_PRINT("Inside dv send for");
+}
+LOG_PRINT("Dv send done");
+
+}
 //Control Handler
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
@@ -708,7 +829,6 @@ bl control_recv_hook(int sock_index)
            ....... 
          ......*/
     }
-
     if(payload_len != 0) free(cntrl_payload);
     return TRUE;
 }
@@ -718,15 +838,28 @@ bl control_recv_hook(int sock_index)
 void main_loop()
 {
     int selret, sock_index, fdaccept;
-    timeval * time_val;
-
+    struct timeval time_val;
+    time_val.tv_sec = TIME_PERIOD;
+    time_val.tv_usec = 0;
     while(TRUE){
         watch_list = master_list;
-        selret = select(head_fd+1, &watch_list, NULL, NULL, NULL);
-
+        if(TIME_PERIOD != 0)
+        selret = select(head_fd+1, &watch_list, NULL, NULL, &time_val);
+        else
+        {
+            selret = select(head_fd+1, &watch_list, NULL, NULL, NULL);
+        }
+        
         if(selret < 0)
-            ERROR("select failed.");
-
+        {    ERROR("select failed.");}
+        else
+        {
+            if(selret == 0){
+            create_dv_payload();
+             dv_send();}
+        }
+        
+        
         /* Loop through file descriptors to check which ones are ready */
         for(sock_index=0; sock_index<=head_fd; sock_index+=1){
             printf("I am here 1");
